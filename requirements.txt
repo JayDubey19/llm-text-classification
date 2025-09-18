@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 scikit-learn
-transformers
-torch
+torch==2.1.0+cpu   # CPU-only PyTorch to save memory
+transformers==4.40.0  # smaller version; consider distilbert or tiny models
