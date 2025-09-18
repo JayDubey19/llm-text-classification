@@ -113,7 +113,7 @@ POST /feedback
 ```bash
 GET /metrics
 ```
-Response example:
+Response example:  
 ```json
 {
   "total_requests": 3,
