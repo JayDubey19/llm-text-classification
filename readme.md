@@ -1,3 +1,225 @@
+# LLM-Powered Text Classification API
+
+A minimal **FastAPI-based API** for classifying text into categories such as **toxic**, **spam**, and **safe**, powered by a Hugging Face transformer model.  
+
+This project was built as part of an assignment to demonstrate:
+- LLM-powered content moderation
+- Prompt engineering
+- Feedback loop for continuous improvement
+- API metrics & evaluation harness
+
+---
+
+## 🚀 Features
+- **POST /classify** → Classify input text (`toxic`, `spam`, `safe`)
+- **POST /feedback** → Store feedback for retraining/evaluation
+- **GET /metrics** → Track total requests, class distribution, feedback, latency
+- **GET /healthz** → Health check
+- **Prompt Engineering** → Includes baseline and improved prompts
+- **Evaluation Harness** → Accuracy, Precision, Recall, and F1 on small dataset
+
+---
+
+## 📂 Project Structure
+```
+.
+├─ app/
+│  ├─ main.py               # FastAPI entrypoint
+│  ├─ routes/               # API route handlers
+│  ├─ services/             # Hugging Face integration
+│  ├─ prompts/              # Baseline & improved prompts
+│  └─ telemetry/            # Metrics collection
+├─ eval/
+│  ├─ dataset.jsonl         # Small evaluation dataset
+│  └─ run.py                # Evaluation script
+├─ tests/
+│  └─ test_api.py           # Basic API tests
+├─ requirements.txt         # Dependencies
+└─ README.md                # Documentation
+```
+
+---
+
+## ⚙️ Setup Instructions
+
+### 1. Clone the repo
+```bash
+git clone https://github.com/YOUR-USERNAME/llm-text-classification.git
+cd llm-text-classification
+```
+
+### 2. Create and activate virtual environment
+```bash
+python -m venv venv
+# Windows
+venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate
+```
+
+### 3. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Run the API
+```bash
+uvicorn app.main:app --reload
+```
+
+Visit 👉 [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) to test endpoints in Swagger UI.  
+
+---
+
+## 🛠️ API Usage
+
+### 🔹 Health Check
+```bash
+GET /healthz
+```
+Response:
+```json
+{"status": "ok"}
+```
+
+### 🔹 Classify Text
+```bash
+POST /classify
 {
-  "README.md": "# LLM-Powered Text Classification API\n\nA minimal **FastAPI-based API** for classifying text into categories such as **toxic**, **spam**, and **safe**, powered by a Hugging Face transformer model.  \n\nThis project was built as part of an assignment to demonstrate:\n- LLM-powered content moderation\n- Prompt engineering\n- Feedback loop for continuous improvement\n- API metrics & evaluation harness\n\n---\n\n## 🚀 Features\n- **POST /classify** → Classify input text (`toxic`, `spam`, `safe`)\n- **POST /feedback** → Store feedback for retraining/evaluation\n- **GET /metrics** → Track total requests, class distribution, feedback, latency\n- **GET /healthz** → Health check\n- **Prompt Engineering** → Includes baseline and improved prompts\n- **Evaluation Harness** → Accuracy, Precision, Recall, and F1 on small dataset\n\n---\n\n## 📂 Project Structure\n```\n.\n├─ app/\n│  ├─ main.py               # FastAPI entrypoint\n│  ├─ routes/               # API route handlers\n│  ├─ services/             # Hugging Face integration\n│  ├─ prompts/              # Baseline & improved prompts\n│  └─ telemetry/            # Metrics collection\n├─ eval/\n│  ├─ dataset.jsonl         # Small evaluation dataset\n│  └─ run.py                # Evaluation script\n├─ requirements.txt         # Dependencies\n└─ README.md                # Documentation\n```\n\n---\n\n## ⚙️ Setup Instructions\n\n### 1. Clone the repo\n```bash\ngit clone https://github.com/YOUR-USERNAME/llm-text-classification.git\ncd llm-text-classification\n```\n\n### 2. Create and activate virtual environment\n```bash\npython -m venv venv\n# Windows\nvenv\\Scripts\\activate\n# macOS/Linux\nsource venv/bin/activate\n```\n\n### 3. Install dependencies\n```bash\npip install -r requirements.txt\n```\n\n### 4. Run the API\n```bash\nuvicorn app.main:app --reload\n```\n\nVisit 👉 [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) to test endpoints in Swagger UI.  \n\n---\n\n## 🛠️ API Usage\n\n### 🔹 Health Check\n```bash\nGET /healthz\n```\nResponse:\n```json\n{\"status\": \"ok\"}\n```\n\n### 🔹 Classify Text\n```bash\nPOST /classify\n{\n  \"text\": \"I hate you\"\n}\n```\nResponse:\n```json\n{\n  \"class\": \"toxic\",\n  \"confidence\": 0.95,\n  \"prompt_used\": \"You are a helpful moderation assistant...\\nText: I hate you\\nAnswer:\",\n  \"latency_ms\": 120\n}\n```\n\n### 🔹 Send Feedback\n```bash\nPOST /feedback\n{\n  \"text\": \"I hate you\",\n  \"predicted\": \"toxic\",\n  \"correct\": \"toxic\"\n}\n```\n\n### 🔹 Metrics\n```bash\nGET /metrics\n```\nResponse example:\n```json\n{\n  \"total_requests\": 3,\n  \"class_distribution\": {\"toxic\": 2, \"safe\": 1},\n  \"feedback_counts\": {\"positive\": 1, \"negative\": 0},\n  \"latency\": {\"avg_ms\": 150, \"p95_ms\": 200}\n}\n```\n\n---\n\n## 🧠 Prompt Engineering\n\n- **Baseline Prompt**\n```text\nClassify the following text into toxic, spam, or safe:\n{text}\n```\n\n- **Improved Prompt**\n```text\nYou are a helpful moderation assistant.\nAnalyze the user text carefully and classify it as one of:\n- toxic (offensive or hateful)\n- spam (irrelevant or promotional)\n- safe (harmless)\n\nText: {text}\nAnswer:\n```\n\n**Choice Rationale:**  \n- Baseline → zero-shot, minimal instruction.  \n- Improved → role-based, structured categories, improves accuracy.  \n\n---\n\n## 📊 Evaluation\n\nDataset: [`eval/dataset.jsonl`](eval/dataset.jsonl) (~20–30 labeled examples).  \n\nRun evaluation:\n```bash\npython -m eval.run\n```\n\nMetrics reported:\n- Accuracy\n- Precision\n- Recall\n- F1-score\n\n---\n\n## ⚖️ Design Trade-offs & Limitations\n- **In-memory feedback** → resets on server restart (could be persisted in SQLite/JSON for production).\n- **Small dataset** → only for demonstration, not robust training.\n- **CPU inference only** → slower on large models, but works for assignment/demo.\n- **Limited categories** → only `toxic`, `spam`, `safe`; can be expanded.\n\n---\n\n## 🌐 (Optional) Deployment\nThis API can be deployed to **Render**, **Railway**, or **Fly.io**.  \nStart Command:\n```bash\nuvicorn app.main:app --host 0.0.0.0 --port 10000\n```\n\n---\n\n## 🧪 Running Tests\n\nThis project includes basic tests for all endpoints using **pytest**.\n\n### Run Tests\nFrom the project root:\n```bash\npytest\n```\n\nOn Windows PowerShell, if you face `ModuleNotFoundError`, set `PYTHONPATH` explicitly:\n```powershell\n$env:PYTHONPATH=\".\"; pytest\n```\n\n### Example Output\n```\ncollected 4 items\n\ntests/test_api.py ....                                                       [100%]\n\n4 passed in 22.6s\n```\n\n✅ This confirms that `/healthz`, `/classify`, `/feedback`, and `/metrics` are all working as expected.\n\n---\n\n## ✅ Deliverables\n- [x] FastAPI app with required endpoints  \n- [x] Prompt library with baseline & improved prompts  \n- [x] Feedback persistence  \n- [x] Metrics endpoint  \n- [x] Evaluation harness with dataset  \n- [x] README with setup, usage, prompts, and evaluation  \n- [x] Basic tests for endpoints  \n\n---\n"
+  "text": "I hate you"
 }
+```
+Response:
+```json
+{
+  "class": "toxic",
+  "confidence": 0.95,
+  "prompt_used": "You are a helpful moderation assistant...\nText: I hate you\nAnswer:",
+  "latency_ms": 120
+}
+```
+
+### 🔹 Send Feedback
+```bash
+POST /feedback
+{
+  "text": "I hate you",
+  "predicted": "toxic",
+  "correct": "toxic"
+}
+```
+
+### 🔹 Metrics
+```bash
+GET /metrics
+```
+Response example:
+```json
+{
+  "total_requests": 3,
+  "class_distribution": {"toxic": 2, "safe": 1},
+  "feedback_counts": {"positive": 1, "negative": 0},
+  "latency": {"avg_ms": 150, "p95_ms": 200}
+}
+```
+
+---
+
+## 🧠 Prompt Engineering
+
+- **Baseline Prompt**
+```text
+Classify the following text into toxic, spam, or safe:
+{text}
+```
+
+- **Improved Prompt**
+```text
+You are a helpful moderation assistant.
+Analyze the user text carefully and classify it as one of:
+- toxic (offensive or hateful)
+- spam (irrelevant or promotional)
+- safe (harmless)
+
+Text: {text}
+Answer:
+```
+
+**Choice Rationale:**  
+- Baseline → zero-shot, minimal instruction.  
+- Improved → role-based, structured categories, improves accuracy.  
+
+---
+
+## 📊 Evaluation
+
+Dataset: [`eval/dataset.jsonl`](eval/dataset.jsonl) (~20–30 labeled examples).  
+
+Run evaluation:
+```bash
+python -m eval.run
+```
+
+Metrics reported:
+- Accuracy
+- Precision
+- Recall
+- F1-score
+
+---
+
+## ⚖️ Design Trade-offs & Limitations
+- **In-memory feedback** → resets on server restart (could be persisted in SQLite/JSON for production).
+- **Small dataset** → only for demonstration, not robust training.
+- **CPU inference only** → slower on large models, but works for assignment/demo.
+- **Limited categories** → only `toxic`, `spam`, `safe`; can be expanded.
+
+---
+
+## 🌐 (Optional) Deployment
+This API can be deployed to **Render**, **Railway**, or **Fly.io**.  
+Start Command:
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 10000
+```
+
+---
+
+## 🧪 Running Tests
+
+This project includes basic tests for all endpoints using **pytest**.
+
+### Run Tests
+From the project root:
+```bash
+pytest
+```
+
+On Windows PowerShell, if you face `ModuleNotFoundError`, set `PYTHONPATH` explicitly:
+```powershell
+$env:PYTHONPATH="."; pytest
+```
+
+### Example Output
+```
+collected 4 items
+
+tests/test_api.py ....                                                       [100%]
+
+4 passed in 22.6s
+```
+
+✅ This confirms that `/healthz`, `/classify`, `/feedback`, and `/metrics` are all working as expected.
+
+---
+
+## ✅ Deliverables
+- [x] FastAPI app with required endpoints  
+- [x] Prompt library with baseline & improved prompts  
+- [x] Feedback persistence  
+- [x] Metrics endpoint  
+- [x] Evaluation harness with dataset  
+- [x] README with setup, usage, prompts, and evaluation  
+- [x] Basic tests for endpoints  
+
+---
